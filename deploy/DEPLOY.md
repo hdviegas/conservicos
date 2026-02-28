@@ -7,7 +7,6 @@
    - `APP_KEY`
    - `APP_URL`
    - `DB_PASSWORD`
-   - `REDIS_HOST_PORT` (ex.: `6380`, se `6379` já estiver em uso no host)
 3. Gere `APP_KEY` se necessário:
 
 ```bash
@@ -20,7 +19,7 @@ docker compose run --rm app php artisan key:generate --show
 docker compose \
   -f docker-compose.yml \
   -f docker-compose.prod.yml \
-  up -d --build
+  up -d --force-recreate
 ```
 
 ## 3) Configurar Nginx do host
@@ -58,7 +57,7 @@ docker compose \
   up -d --build
 ```
 
-## Observação sobre portas do Redis
+## Observação sobre Redis
 
-- `REDIS_PORT` é a porta interna do container (normalmente `6379`) usada pela aplicação.
-- `REDIS_HOST_PORT` é a porta publicada no host Linux (ex.: `6380`) para evitar conflito com outro Redis já instalado.
+- Em produção, o Redis fica apenas na rede interna do Docker (`redis:6379`) e não publica porta no host.
+- Isso evita conflito com qualquer Redis já instalado no servidor.
