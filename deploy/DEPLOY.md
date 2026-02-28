@@ -61,3 +61,12 @@ docker compose \
 
 - Em produção, o Redis fica apenas na rede interna do Docker (`redis:6379`) e não publica porta no host.
 - Isso evita conflito com qualquer Redis já instalado no servidor.
+
+## Observação sobre MySQL root remoto
+
+- Na criação inicial do volume (`mysql_data` vazio), o bootstrap do MySQL executa `docker/mysql/init/01-grant-root-remote.sh` e libera `root@'%'`.
+- Em bancos já existentes, rode manualmente:
+
+```bash
+bash deploy/grant-mysql-root-remote.sh
+```
