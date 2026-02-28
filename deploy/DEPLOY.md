@@ -2,7 +2,7 @@
 
 ## 1) Preparar ambiente
 
-1. Copie `.env.prod.example` para `.env.prod`.
+1. Copie `.env.prod.example` para `.env`.
 2. Ajuste ao menos:
    - `APP_KEY`
    - `APP_URL`
@@ -20,7 +20,6 @@ docker compose run --rm app php artisan key:generate --show
 docker compose \
   -f docker-compose.yml \
   -f docker-compose.prod.yml \
-  --env-file .env.prod \
   up -d --build
 ```
 
@@ -56,7 +55,6 @@ git pull
 docker compose \
   -f docker-compose.yml \
   -f docker-compose.prod.yml \
-  --env-file .env.prod \
   up -d --build
 ```
 
