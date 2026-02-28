@@ -15,7 +15,8 @@ class PayrollPeriodInfolist
             Section::make('Informações do Período')
                 ->schema([
                     TextEntry::make('company.name')
-                        ->label('Empresa'),
+                        ->label('Empresa')
+                        ->columnSpan(3),
                     TextEntry::make('period_label')
                         ->label('Período'),
                     TextEntry::make('status')
@@ -28,19 +29,24 @@ class PayrollPeriodInfolist
                             $state instanceof PayrollStatus ? $state->color() : 'gray'
                         ),
                     TextEntry::make('entries_count')
-                        ->label('Funcionários Calculados')
+                        ->label('Funcionários')
                         ->state(fn ($record) => $record->entries()->count()),
                     TextEntry::make('calculated_at')
                         ->label('Calculado em')
-                        ->dateTime('d/m/Y H:i'),
+                        ->dateTime('d/m/Y H:i')
+                        ->placeholder('—'),
                     TextEntry::make('closed_at')
                         ->label('Fechado em')
-                        ->dateTime('d/m/Y H:i'),
+                        ->dateTime('d/m/Y H:i')
+                        ->placeholder('—'),
                     TextEntry::make('notes')
                         ->label('Observações')
-                        ->columnSpanFull(),
+                        ->placeholder('—')
+                        ->columnSpan(3),
                 ])
-                ->columns(3),
+                ->columns(6)
+                ->columnSpan('full'),
+                //->compact(),
         ]);
     }
 }

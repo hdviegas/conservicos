@@ -22,6 +22,8 @@ class PayrollEntryResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Entradas da Folha';
 
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static ?int $navigationSort = 2;
 
     public static function getNavigationGroup(): ?string

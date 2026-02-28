@@ -6,6 +6,7 @@ use App\Filament\Resources\PayrollPeriods\Infolists\PayrollPeriodInfolist;
 use App\Filament\Resources\PayrollPeriods\Pages\CreatePayrollPeriod;
 use App\Filament\Resources\PayrollPeriods\Pages\ListPayrollPeriods;
 use App\Filament\Resources\PayrollPeriods\Pages\ViewPayrollPeriod;
+use App\Filament\Resources\PayrollPeriods\RelationManagers\PayrollEntriesRelationManager;
 use App\Filament\Resources\PayrollPeriods\Schemas\PayrollPeriodForm;
 use App\Filament\Resources\PayrollPeriods\Tables\PayrollPeriodsTable;
 use App\Models\PayrollPeriod;
@@ -21,11 +22,11 @@ class PayrollPeriodResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalculator;
 
-    protected static ?string $navigationLabel = 'Períodos de Folha';
+    protected static ?string $navigationLabel = 'Folha de Pagamento';
 
-    protected static ?string $modelLabel = 'Período de Folha';
+    protected static ?string $modelLabel = 'Folha de Pagamento';
 
-    protected static ?string $pluralModelLabel = 'Períodos de Folha';
+    protected static ?string $pluralModelLabel = 'Folha de Pagamento';
 
     protected static ?int $navigationSort = 1;
 
@@ -47,6 +48,13 @@ class PayrollPeriodResource extends Resource
     public static function infolist(Schema $schema): Schema
     {
         return PayrollPeriodInfolist::configure($schema);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            PayrollEntriesRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

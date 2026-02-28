@@ -1,20 +1,22 @@
 <?php
 
-namespace App\Filament\Resources\PayrollEntries\Tables;
+namespace App\Filament\Resources\PayrollPeriods\RelationManagers;
 
 use App\Exports\PayrollEntryExport;
-use App\Models\Company;
 use App\Models\PayrollEntry;
-use App\Models\PayrollPeriod;
 use Filament\Actions\Action;
+use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Maatwebsite\Excel\Facades\Excel;
 
-class PayrollEntriesTable
+class PayrollEntriesRelationManager extends RelationManager
 {
-    public static function configure(Table $table): Table
+    protected static string $relationship = 'entries';
+
+    protected static ?string $title = 'Entradas da Folha';
+
+    public function table(Table $table): Table
     {
         return $table
             ->columns([
@@ -22,11 +24,6 @@ class PayrollEntriesTable
                     ->label('Funcionário')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('employee.company.name')
-                    ->label('Empresa')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('payrollPeriod.period_label')
-                    ->label('Período'),
                 TextColumn::make('base_salary')
                     ->label('Salário Base')
                     ->money('BRL'),
@@ -87,33 +84,6 @@ class PayrollEntriesTable
                         return $sign . sprintf('%02d:%02d', intdiv($abs, 60), $abs % 60);
                     })
                     ->color(fn ($state) => (int) $state >= 0 ? 'success' : 'danger'),
-            ])
-            ->filters([
-                SelectFilter::make('payroll_period_id')
-                    ->label('Período')
-                    ->options(function () {
-                        return PayrollPeriod::with('company')
-                            ->orderByDesc('year')
-                            ->orderByDesc('month')
-                            ->get()
-                            ->mapWithKeys(fn ($p) => [
-                                $p->id => ($p->company->name ?? '?') . ' — ' .
-                                    str_pad((string) $p->month, 2, '0', STR_PAD_LEFT) . '/' . $p->year,
-                            ]);
-                    })
-                    ->searchable(),
-                SelectFilter::make('company')
-                    ->label('Empresa')
-                    ->options(Company::pluck('name', 'id'))
-                    ->query(fn ($query, array $data) =>
-                        $query->when(
-                            $data['value'] ?? null,
-                            fn ($q, $v) => $q->whereHas(
-                                'employee',
-                                fn ($eq) => $eq->where('company_id', $v)
-                            )
-                        )
-                    ),
             ])
             ->headerActions([
                 Action::make('export')
