@@ -44,4 +44,5 @@ services:
   redis:
     env_file:
       - .env.prod
-    ports: []
+    ports:
+      - "127.0.0.1:${REDIS_HOST_PORT:-6380}:6379"

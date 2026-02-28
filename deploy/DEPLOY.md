@@ -7,6 +7,7 @@
    - `APP_KEY`
    - `APP_URL`
    - `DB_PASSWORD`
+   - `REDIS_HOST_PORT` (ex.: `6380`, se `6379` já estiver em uso no host)
 3. Gere `APP_KEY` se necessário:
 
 ```bash
@@ -58,3 +59,8 @@ docker compose \
   --env-file .env.prod \
   up -d --build
 ```
+
+## Observação sobre portas do Redis
+
+- `REDIS_PORT` é a porta interna do container (normalmente `6379`) usada pela aplicação.
+- `REDIS_HOST_PORT` é a porta publicada no host Linux (ex.: `6380`) para evitar conflito com outro Redis já instalado.
