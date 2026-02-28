@@ -39,7 +39,7 @@ php artisan storage:link --force 2>/dev/null || true
 # Fix permissions
 chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 
-echo "✅ Application ready — http://localhost:${APP_PORT:-8000}/admin"
+echo "✅ Application ready — http://localhost:${APP_PORT:-9991}/admin"
 echo ""
 
 # Hand off to the CMD (php-fpm or artisan command)

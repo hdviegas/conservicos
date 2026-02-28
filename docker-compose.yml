@@ -31,7 +31,7 @@ services:
     container_name: conservicos-nginx
     restart: unless-stopped
     ports:
-      - "${APP_PORT:-8000}:80"
+      - "${APP_PORT:-9991}:80"
     volumes:
       - .:/var/www/html:ro
       - storage_data:/var/www/html/storage/app:ro
