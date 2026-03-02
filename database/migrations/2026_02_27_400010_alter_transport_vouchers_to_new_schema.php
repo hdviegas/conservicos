@@ -8,6 +8,16 @@ return new class extends Migration
 {
     public function up(): void
     {
+        $oldColumns = ['month', 'year', 'total_days', 'notes'];
+        $hasAnyOldColumn = collect($oldColumns)->contains(
+            fn (string $column): bool => Schema::hasColumn('transport_vouchers', $column)
+        );
+
+        // Fresh databases already use the new schema in the create migration.
+        if (! $hasAnyOldColumn) {
+            return;
+        }
+
         Schema::table('transport_vouchers', function (Blueprint $table) {
             // Remove old columns
             $table->dropColumn(['month', 'year', 'total_days', 'notes']);

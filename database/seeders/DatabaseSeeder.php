@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             TrainingSeeder::class,
             ComplianceRequirementSeeder::class,
             CompanyBankAccountSeeder::class,
+            AdminUserSeeder::class,
         ]);
     }
 }

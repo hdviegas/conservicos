@@ -80,6 +80,75 @@ class Employee extends Model
         'gratificacao' => 'decimal:2',
     ];
 
+    public function setCpfAttribute(?string $value): void
+    {
+        $this->attributes['cpf'] = $this->digitsOnly($value);
+    }
+
+    public function setPisAttribute(?string $value): void
+    {
+        $this->attributes['pis'] = $this->digitsOnly($value);
+    }
+
+    public function setRgAttribute(?string $value): void
+    {
+        $this->attributes['rg'] = $this->alnumUpper($value);
+    }
+
+    public function setCtpsAttribute(?string $value): void
+    {
+        $this->attributes['ctps'] = $this->alnumUpper($value);
+    }
+
+    public function setCnhAttribute(?string $value): void
+    {
+        $this->attributes['cnh'] = $this->alnumUpper($value);
+    }
+
+    public function setZipCodeAttribute(?string $value): void
+    {
+        $this->attributes['zip_code'] = $this->digitsOnly($value);
+    }
+
+    public function setPixKeyAttribute(?string $value): void
+    {
+        $normalizedValue = trim((string) $value);
+        if ($normalizedValue === '') {
+            $this->attributes['pix_key'] = null;
+
+            return;
+        }
+
+        $pixKeyType = $this->attributes['pix_key_type'] ?? null;
+        if ($pixKeyType === PixKeyType::Cpf->value) {
+            $normalizedValue = $this->digitsOnly($normalizedValue) ?? '';
+        }
+
+        $this->attributes['pix_key'] = $normalizedValue !== '' ? $normalizedValue : null;
+    }
+
+    private function digitsOnly(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $normalized = preg_replace('/\D+/', '', trim($value)) ?? '';
+
+        return $normalized !== '' ? $normalized : null;
+    }
+
+    private function alnumUpper(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $normalized = preg_replace('/[^A-Za-z0-9]+/', '', strtoupper(trim($value))) ?? '';
+
+        return $normalized !== '' ? $normalized : null;
+    }
+
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);

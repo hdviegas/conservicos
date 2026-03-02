@@ -29,6 +29,38 @@ class Company extends Model
         'active' => 'boolean',
     ];
 
+    public function setCnpjAttribute(?string $value): void
+    {
+        $this->attributes['cnpj'] = $this->digitsOnly($value);
+    }
+
+    public function setInscricaoEstadualAttribute(?string $value): void
+    {
+        $this->attributes['inscricao_estadual'] = $this->alnumUpper($value);
+    }
+
+    private function digitsOnly(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $normalized = preg_replace('/\D+/', '', trim($value)) ?? '';
+
+        return $normalized !== '' ? $normalized : null;
+    }
+
+    private function alnumUpper(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $normalized = preg_replace('/[^A-Za-z0-9]+/', '', strtoupper(trim($value))) ?? '';
+
+        return $normalized !== '' ? $normalized : null;
+    }
+
     public function departments(): HasMany
     {
         return $this->hasMany(Department::class);

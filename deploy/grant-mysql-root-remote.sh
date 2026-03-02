@@ -4,30 +4,29 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${ROOT_DIR}"
 
-COMPOSE_ARGS=(-f docker-compose.yml)
-if [[ -f docker-compose.prod.yml ]]; then
-  COMPOSE_ARGS+=(-f docker-compose.prod.yml)
-fi
+MYSQL_CONTAINER_NAME="${MYSQL_CONTAINER_NAME:-conservicos-mysql}"
 
-if ! docker compose "${COMPOSE_ARGS[@]}" ps mysql >/dev/null 2>&1; then
-  echo "Could not find mysql service via docker compose."
-  echo "Ensure containers are created before running this script."
+if ! docker ps --format '{{.Names}}' | rg -x "${MYSQL_CONTAINER_NAME}" >/dev/null; then
+  echo "MySQL container '${MYSQL_CONTAINER_NAME}' is not running."
+  echo "Start the stack first and try again."
   exit 1
 fi
 
-ROOT_PASSWORD="$(
-  docker compose "${COMPOSE_ARGS[@]}" exec -T mysql printenv MYSQL_ROOT_PASSWORD 2>/dev/null || true
-)"
+CURRENT_ROOT_PASSWORD="${MYSQL_ROOT_CURRENT_PASSWORD:-}"
+if [[ -z "${CURRENT_ROOT_PASSWORD}" ]]; then
+  read -rsp "Current MySQL root password: " CURRENT_ROOT_PASSWORD
+  echo ""
+fi
 
-if [[ -z "${ROOT_PASSWORD}" ]]; then
-  echo "MYSQL_ROOT_PASSWORD not found inside mysql container."
-  echo "Check your compose/.env configuration and container status."
+if [[ -z "${CURRENT_ROOT_PASSWORD}" ]]; then
+  echo "Root password is required."
   exit 1
 fi
 
-SQL_PASSWORD="${ROOT_PASSWORD//\'/\'\'}"
+NEW_ROOT_PASSWORD="${MYSQL_ROOT_NEW_PASSWORD:-${CURRENT_ROOT_PASSWORD}}"
+SQL_PASSWORD="${NEW_ROOT_PASSWORD//\'/\'\'}"
 
-docker compose "${COMPOSE_ARGS[@]}" exec -T -e MYSQL_PWD="${ROOT_PASSWORD}" mysql mysql -uroot <<SQL
+docker exec -i -e MYSQL_PWD="${CURRENT_ROOT_PASSWORD}" "${MYSQL_CONTAINER_NAME}" mysql -uroot <<SQL
 CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED BY '${SQL_PASSWORD}';
 ALTER USER 'root'@'%' IDENTIFIED BY '${SQL_PASSWORD}';
 GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;

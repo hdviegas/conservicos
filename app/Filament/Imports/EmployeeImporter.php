@@ -253,7 +253,9 @@ class EmployeeImporter extends Importer
 
     public function resolveRecord(): ?Employee
     {
-        return Employee::withTrashed()->firstOrNew(['cpf' => $this->data['cpf']]);
+        $cpf = preg_replace('/\D+/', '', (string) ($this->data['cpf'] ?? '')) ?? '';
+
+        return Employee::withTrashed()->firstOrNew(['cpf' => $cpf]);
     }
 
     public static function getCompletedNotificationBody(Import $import): string

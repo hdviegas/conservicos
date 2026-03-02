@@ -11,6 +11,14 @@ use Carbon\Carbon;
 class TimeReportImporterService
 {
     /**
+     * Normaliza CPF para comparação (somente dígitos).
+     */
+    private function normalizeCpf(string $cpf): string
+    {
+        return preg_replace('/\D+/', '', trim($cpf)) ?? '';
+    }
+
+    /**
      * Detecta o formato do CSV verificando se as colunas Extra 50% e Extra 100% existem.
      */
     public function detectFormat(array $headers): bool
@@ -202,19 +210,28 @@ class TimeReportImporterService
                 return ($idx !== null && isset($row[$idx])) ? trim($row[$idx]) : '';
             };
 
-            $cpf = $get('CPF do funcionário');
+            $cpfRaw = $get('CPF do funcionário');
+            $cpf    = $this->normalizeCpf($cpfRaw);
+
             if (empty($cpf)) {
                 continue;
             }
 
             if (! isset($employeeCache[$cpf])) {
-                $employeeCache[$cpf] = Employee::where('cpf', $cpf)->first();
+                $employeeCache[$cpf] = Employee::query()
+                    ->where('cpf', $cpfRaw)
+                    ->orWhere('cpf', $cpf)
+                    ->orWhereRaw(
+                        "REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') = ?",
+                        [$cpf]
+                    )
+                    ->first();
             }
             $employee = $employeeCache[$cpf];
 
             if (! $employee) {
                 $nome     = $get('Nome do funcionário');
-                $errors[] = "Funcionário não encontrado: CPF {$cpf} ({$nome})";
+                $errors[] = "Funcionário não encontrado: CPF {$cpfRaw} ({$nome})";
                 continue;
             }
 
