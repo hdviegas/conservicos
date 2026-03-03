@@ -3,6 +3,12 @@ set -e
 
 echo "🚀 CONSERVICOS — starting..."
 
+# Sync baked public assets to shared volume (nginx reads from this volume in prod)
+if [ -d /var/www/html/public-build ]; then
+    echo "📂 Syncing public assets to shared volume..."
+    cp -a /var/www/html/public-build/. /var/www/html/public/
+fi
+
 # Wait for MySQL with timeout to avoid endless startup loops.
 MAX_MYSQL_WAIT_SECONDS="${MAX_MYSQL_WAIT_SECONDS:-90}"
 SLEEP_SECONDS=3

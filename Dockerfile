@@ -70,6 +70,9 @@ COPY --chown=www:www . .
 # Run composer autoloader and scripts
 RUN composer dump-autoload --optimize
 
+# Snapshot public dir so entrypoint can sync it to shared volume on each deploy
+RUN cp -a public /var/www/html/public-build
+
 # Copy entrypoint
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh

@@ -4,6 +4,7 @@ services:
       APP_ENV: production
       APP_DEBUG: "false"
     volumes: !override
+      - public_data:/var/www/html/public
       - storage_data:/var/www/html/storage/app
       - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini:ro
 
@@ -27,6 +28,7 @@ services:
     ports: !override
       - "127.0.0.1:${APP_PORT:-9991}:80"
     volumes: !override
+      - public_data:/var/www/html/public:ro
       - storage_data:/var/www/html/storage/app:ro
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
 
@@ -36,3 +38,7 @@ services:
   redis:
     ports: !override
       - "127.0.0.1:${REDIS_HOST_PORT:-6381}:6379"
+
+volumes:
+  public_data:
+    driver: local
