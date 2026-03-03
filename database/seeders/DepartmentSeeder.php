@@ -10,8 +10,8 @@ class DepartmentSeeder extends Seeder
 {
     public function run(): void
     {
-        $servicon = Company::where('cnpj', '03.225.148/0001-12')->firstOrFail();
-        $lara = Company::where('cnpj', '44.053.313/0001-83')->firstOrFail();
+        $servicon = Company::where('cnpj', '03225148000112')->firstOrFail();
+        $lara = Company::where('cnpj', '44053313000183')->firstOrFail();
 
         $departments = [
             ['company_id' => $servicon->id, 'name' => 'RIOGRANDENSE'],

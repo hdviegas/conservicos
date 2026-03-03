@@ -10,7 +10,7 @@ class CompanySeeder extends Seeder
     public function run(): void
     {
         Company::firstOrCreate(
-            ['cnpj' => '03.225.148/0001-12'],
+            ['cnpj' => '03225148000112'],
             [
                 'name' => 'SERVICON SERVICOS LTDA',
                 'inscricao_estadual' => 'ISENTO',
@@ -19,7 +19,7 @@ class CompanySeeder extends Seeder
         );
 
         Company::firstOrCreate(
-            ['cnpj' => '44.053.313/0001-83'],
+            ['cnpj' => '44053313000183'],
             [
                 'name' => 'LARA P R ROCHA PSICOLOGIA E SERVICOS LTDA',
                 'inscricao_estadual' => 'ISENTO',
