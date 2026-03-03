@@ -64,13 +64,22 @@ RUN composer install \
     --no-autoloader \
     --prefer-dist
 
+# Copy package files first (layer cache optimization for npm)
+COPY --chown=www:www package.json package-lock.json* ./
+
+# Install Node dependencies
+RUN npm ci --no-audit --no-fund
+
 # Copy application files
 COPY --chown=www:www . .
 
 # Run composer autoloader and scripts
 RUN composer dump-autoload --optimize
 
-# Snapshot public dir so entrypoint can sync it to shared volume on each deploy
+# Build frontend assets (Vite)
+RUN npm run build
+
+# Snapshot public dir (including build/) so entrypoint can sync it to shared volume
 RUN cp -a public /var/www/html/public-build
 
 # Copy entrypoint
