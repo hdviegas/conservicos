@@ -3,11 +3,22 @@ set -e
 
 echo "🚀 CONSERVICOS — starting..."
 
-# Wait for MySQL to be ready using mysqladmin (more reliable than PHP PDO)
-echo "⏳ Waiting for MySQL at ${DB_HOST}:${DB_PORT:-3306}..."
-until mysqladmin ping -h "${DB_HOST}" -P "${DB_PORT:-3306}" -u "${DB_USERNAME}" --password="${DB_PASSWORD}" --ssl-mode=DISABLED --silent 2>/dev/null; do
-    echo "  MySQL not ready — retrying in 3s..."
-    sleep 3
+# Wait for MySQL with timeout to avoid endless startup loops.
+MAX_MYSQL_WAIT_SECONDS="${MAX_MYSQL_WAIT_SECONDS:-90}"
+SLEEP_SECONDS=3
+MAX_RETRIES=$((MAX_MYSQL_WAIT_SECONDS / SLEEP_SECONDS))
+ATTEMPT=0
+
+echo "⏳ Waiting for MySQL at ${DB_HOST}:${DB_PORT:-3306} (timeout: ${MAX_MYSQL_WAIT_SECONDS}s)..."
+until mysql --protocol=TCP --skip-ssl -h "${DB_HOST}" -P "${DB_PORT:-3306}" -u "${DB_USERNAME}" --password="${DB_PASSWORD}" -e "SELECT 1" >/dev/null 2>&1; do
+    ATTEMPT=$((ATTEMPT + 1))
+    if [ "${ATTEMPT}" -ge "${MAX_RETRIES}" ]; then
+        echo "❌ MySQL not reachable after ${MAX_MYSQL_WAIT_SECONDS}s."
+        echo "   Check DB_HOST/DB_PORT/DB_USERNAME/DB_PASSWORD and MySQL logs."
+        exit 1
+    fi
+    echo "  MySQL not ready — retrying in ${SLEEP_SECONDS}s... (${ATTEMPT}/${MAX_RETRIES})"
+    sleep "${SLEEP_SECONDS}"
 done
 echo "✅ MySQL ready."
 

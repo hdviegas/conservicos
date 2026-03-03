@@ -48,7 +48,9 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${DB_DATABASE:-conservicos}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root-secret-change-me}
+      MYSQL_USER: ${MYSQL_APP_USERNAME:-conservicos_app}
+      MYSQL_PASSWORD: ${MYSQL_APP_PASSWORD:-app-secret-change-me}
       MYSQL_ROOT_HOST: "%"
       MYSQL_ALLOW_EMPTY_PASSWORD: "no"
       MYSQL_ONETIME_PASSWORD: "false"
@@ -61,7 +63,7 @@ services:
     networks:
       - conservicos
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-secret}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root-secret-change-me}"]
       interval: 10s
       timeout: 5s
       retries: 5

@@ -28,11 +28,14 @@ if [[ -z "${CURRENT_ROOT_PASSWORD}" && -f "${ENV_FILE}" ]]; then
   CURRENT_ROOT_PASSWORD="$(read_env_var "MYSQL_ROOT_CURRENT_PASSWORD" "${ENV_FILE}")"
 fi
 if [[ -z "${CURRENT_ROOT_PASSWORD}" && -f "${ENV_FILE}" ]]; then
+  CURRENT_ROOT_PASSWORD="$(read_env_var "MYSQL_ROOT_PASSWORD" "${ENV_FILE}")"
+fi
+if [[ -z "${CURRENT_ROOT_PASSWORD}" && -f "${ENV_FILE}" ]]; then
   CURRENT_ROOT_PASSWORD="$(read_env_var "DB_PASSWORD" "${ENV_FILE}")"
 fi
 
 if [[ -z "${CURRENT_ROOT_PASSWORD}" ]]; then
-  read -rsp "Current MySQL root password (set MYSQL_ROOT_CURRENT_PASSWORD or DB_PASSWORD in .env to skip): " CURRENT_ROOT_PASSWORD
+  read -rsp "Current MySQL root password (set MYSQL_ROOT_CURRENT_PASSWORD or MYSQL_ROOT_PASSWORD in .env to skip): " CURRENT_ROOT_PASSWORD
   echo ""
 fi
 
