@@ -5,7 +5,7 @@ echo "🚀 CONSERVICOS — starting..."
 
 # Wait for MySQL to be ready using mysqladmin (more reliable than PHP PDO)
 echo "⏳ Waiting for MySQL at ${DB_HOST}:${DB_PORT:-3306}..."
-until mysqladmin ping -h "${DB_HOST}" -P "${DB_PORT:-3306}" -u "${DB_USERNAME}" --password="${DB_PASSWORD}" --silent 2>/dev/null; do
+until mysqladmin ping -h "${DB_HOST}" -P "${DB_PORT:-3306}" -u "${DB_USERNAME}" --password="${DB_PASSWORD}" --ssl-mode=DISABLED --silent 2>/dev/null; do
     echo "  MySQL not ready — retrying in 3s..."
     sleep 3
 done
