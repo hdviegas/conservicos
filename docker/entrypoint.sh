@@ -9,7 +9,20 @@ if [ -d /var/www/html/public-build ]; then
     cp -a /var/www/html/public-build/. /var/www/html/public/
 fi
 
-# Wait for MySQL with timeout to avoid endless startup loops.
+# Fix permissions (may fail silently if not owner)
+chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+
+# Storage symlink (safe to run always)
+php artisan storage:link --force 2>/dev/null || true
+
+# If this is a queue/scheduler worker, skip DB setup and jump to exec
+if [ "$1" != "php-fpm" ]; then
+    echo "⚡ Worker mode — skipping DB bootstrap"
+    exec "$@"
+fi
+
+# ─── DB bootstrap (only for php-fpm entrypoint) ────────────────────────────
+
 MAX_MYSQL_WAIT_SECONDS="${MAX_MYSQL_WAIT_SECONDS:-90}"
 SLEEP_SECONDS=3
 MAX_RETRIES=$((MAX_MYSQL_WAIT_SECONDS / SLEEP_SECONDS))
@@ -19,45 +32,43 @@ echo "⏳ Waiting for MySQL at ${DB_HOST}:${DB_PORT:-3306} (timeout: ${MAX_MYSQL
 until mysql --protocol=TCP --skip-ssl -h "${DB_HOST}" -P "${DB_PORT:-3306}" -u "${DB_USERNAME}" --password="${DB_PASSWORD}" -e "SELECT 1" >/dev/null 2>&1; do
     ATTEMPT=$((ATTEMPT + 1))
     if [ "${ATTEMPT}" -ge "${MAX_RETRIES}" ]; then
-        echo "❌ MySQL not reachable after ${MAX_MYSQL_WAIT_SECONDS}s."
+        echo "❌ MySQL not reachable after ${MAX_MYSQL_WAIT_SECONDS}s — starting php-fpm anyway."
         echo "   Check DB_HOST/DB_PORT/DB_USERNAME/DB_PASSWORD and MySQL logs."
-        exit 1
+        exec "$@"
     fi
     echo "  MySQL not ready — retrying in ${SLEEP_SECONDS}s... (${ATTEMPT}/${MAX_RETRIES})"
     sleep "${SLEEP_SECONDS}"
 done
 echo "✅ MySQL ready."
 
-# Run migrations
+# Run migrations (non-fatal: app starts even if migration fails)
 echo "📦 Running migrations..."
-php artisan migrate --force --no-interaction
+php artisan migrate --force --no-interaction || echo "⚠️  Migration failed — check logs"
 
-# Seed on first boot only (check if companies table is empty)
+# Seed on first boot only
 COMPANY_COUNT=$(php artisan tinker --execute="echo \App\Models\Company::count();" 2>/dev/null | grep -E '^[0-9]+$' | tail -1 || echo "1")
 if [ "$COMPANY_COUNT" = "0" ]; then
     echo "🌱 Seeding database..."
-    php artisan db:seed --force --no-interaction
+    php artisan db:seed --force --no-interaction || echo "⚠️  Seed failed — check logs"
 fi
 
-# Publish Filament assets (CSS/JS)
+# Publish Filament assets
 echo "🎨 Publishing Filament assets..."
-php artisan filament:assets || true
+php artisan filament:assets 2>/dev/null || true
+
+# Re-sync public after filament:assets may have added files
+if [ -d /var/www/html/public-build ]; then
+    cp -a /var/www/html/public/build/. /var/www/html/public-build/build/ 2>/dev/null || true
+fi
 
 # Cache for performance
 echo "⚡ Caching config / routes / views..."
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-php artisan event:cache
-
-# Storage symlink
-php artisan storage:link --force 2>/dev/null || true
-
-# Fix permissions
-chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+php artisan config:cache  || true
+php artisan route:cache   || true
+php artisan view:cache    || true
+php artisan event:cache   || true
 
 echo "✅ Application ready — http://localhost:${APP_PORT:-9991}/admin"
 echo ""
 
-# Hand off to the CMD (php-fpm or artisan command)
 exec "$@"

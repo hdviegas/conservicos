@@ -82,6 +82,9 @@ RUN npm run build
 # Snapshot public dir (including build/) so entrypoint can sync it to shared volume
 RUN cp -a public /var/www/html/public-build
 
+# Bake PHP config into image (no bind-mount needed in prod)
+COPY docker/php/local.ini /usr/local/etc/php/conf.d/local.ini
+
 # Copy entrypoint
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
