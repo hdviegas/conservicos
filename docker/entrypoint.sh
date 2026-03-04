@@ -6,7 +6,8 @@ echo "🚀 CONSERVICOS — starting..."
 # Sync baked public assets to shared volume (nginx reads from this volume in prod)
 if [ -d /var/www/html/public-build ]; then
     echo "📂 Syncing public assets to shared volume..."
-    cp -a /var/www/html/public-build/. /var/www/html/public/
+    mkdir -p /var/www/html/public
+    cp -R /var/www/html/public-build/. /var/www/html/public/ 2>/dev/null || echo "⚠️  Public sync partially skipped (non-fatal)."
 fi
 
 # Fix permissions (may fail silently if not owner)
@@ -58,7 +59,8 @@ php artisan filament:assets 2>/dev/null || true
 
 # Re-sync public after filament:assets may have added files
 if [ -d /var/www/html/public-build ]; then
-    cp -a /var/www/html/public/build/. /var/www/html/public-build/build/ 2>/dev/null || true
+    mkdir -p /var/www/html/public-build/build
+    cp -R /var/www/html/public/build/. /var/www/html/public-build/build/ 2>/dev/null || true
 fi
 
 # Cache for performance
